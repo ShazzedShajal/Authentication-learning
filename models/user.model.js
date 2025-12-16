@@ -6,6 +6,7 @@ const userSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
+        unique: true
     },
     password: {
         type: String,
@@ -15,7 +16,7 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     }
-});
 
+});
 // collection name is User
-module.exports = mongoose.model("User", userSchema);  
+module.exports = mongoose.model("User", userSchema);

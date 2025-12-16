@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const multer = require("multer");
 const upload = multer();
+const User = require("./models/user.model");
 
 // Load environment variables from .env file
 dotenv.config();
@@ -43,14 +44,34 @@ app.use((err, req, res, next) => {
 });
 
 
-app.post("/register", (req, res) => {
-    const { name, email, password } = req.body;
-    res.status(201).json({ message: "User is created", data: { name, email, password } });
+app.post("/register", async (req, res) => {
+    try {
+        const user = new User(req.body);
+        await user.save();
+        res.status(201).json({ message: "User is created", data: user });
+    } catch (error) {
+        res.status(500).json({ message: "User is not created", error: error });
+    }
+
 });
 
-app.post("/login", (req, res) => {
-    //const { email, password } = req.body;
-    res.status(200).json({ message: "User logged in successfully" });
+app.post("/login", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await User.findOne({ email: email });
+
+        if (!user) {
+            return res.status(400).json({ message: "User not found" });
+        }
+
+        else if (user.password !== password) {
+            return res.status(400).json({ message: "Invalid password" });
+        }
+        res.status(200).json({ message: "User logged in successfully" });
+
+    } catch (error) {
+        res.status(500).json({ message: "User is not logged in", error: error });
+    }
 });
 
 app.use((req, res) => {
