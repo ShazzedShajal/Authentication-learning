@@ -1,16 +1,15 @@
-//Database Encryption Authenication
+//Match from Database Authenication
 
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const multer = require("multer");
+const upload = multer();
+const User = require("./models/user.model");
 
 // Load environment variables from .env file
 dotenv.config();
-
-const upload = multer();
-const User = require("./models/user.model");
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URL)
@@ -49,17 +48,11 @@ app.use((err, req, res, next) => {
 
 app.post("/register", async (req, res) => {
     try {
-        console.log("Received registration data:", req.body);
         const user = new User(req.body);
         await user.save();
         res.status(201).json({ message: "User is created", data: user });
     } catch (error) {
-        console.error("Registration error:", error);
-        res.status(500).json({
-            message: "User is not created",
-            error: error.message,
-            details: error
-        });
+        res.status(500).json({ message: "User is not created", error: error });
     }
 
 });
@@ -73,12 +66,9 @@ app.post("/login", async (req, res) => {
             return res.status(400).json({ message: "User not found" });
         }
 
-        // Use bcrypt to compare passwords
-        const isMatch = await user.comparePassword(password);
-        if (!isMatch) {
+        else if (user.password !== password) {
             return res.status(400).json({ message: "Invalid password" });
         }
-
         res.status(200).json({ message: "User logged in successfully" });
 
     } catch (error) {
